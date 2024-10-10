@@ -24,6 +24,7 @@ const client = jwksClient({
 function getKey(header, callback) {
     client.getSigningKey(header.kid, function (err, key) {
         if (err) {
+            console.log("Error getting signing key: " + JSON.stringify(err));
             callback(err);
         } else {
             const signingKey = key.getPublicKey();
@@ -59,6 +60,7 @@ async function verifyTokenAndRespond(req) {
                     issuer: config.issuer
                 }, (err, decoded) => {
                     if (err) {
+                        console.log("Error decoding key: " + JSON.stringify(err));
                         reject(err);
                     } else {
                         resolve(decoded);
@@ -70,6 +72,7 @@ async function verifyTokenAndRespond(req) {
             return true;
 
         } catch (err) {
+            console.log(err);
             return false; // Invalid token
         }
     }
