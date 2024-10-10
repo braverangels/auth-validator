@@ -53,11 +53,7 @@ async function verifyTokenAndRespond(req) {
     }
 
     //Auth is required OR the request has a bearer token
-    if (isAuthModeRequired) {
-
-        if (!hasBearerTokenHeader) {
-            return false;
-        }
+    if (isAuthModeRequired || hasBearerTokenHeader) {
 
         const token = authHeader.split(' ')[1]; // Extract the JWT token
 
