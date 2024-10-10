@@ -15,13 +15,13 @@ function configure(options) {
     config = { ...config, ...options };
 }
 
-// Set up the JWKS client to fetch the public key from Auth0
-const client = jwksClient({
-    jwksUri: config.jwksUri
-});
-
 // Function to retrieve signing key from Auth0
 function getKey(header, callback) {
+    // Set up the JWKS client to fetch the public key from Auth0
+    const client = jwksClient({
+        jwksUri: config.jwksUri
+    });
+
     client.getSigningKey(header.kid, function (err, key) {
         if (err) {
             console.log("Error getting signing key: " + JSON.stringify(err));
