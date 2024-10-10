@@ -3,10 +3,10 @@ const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 
 let config = {
+    apiKey: '',
     audience: '',
     issuer: '',
     authMode: 'OPTIONAL',
-    apiKey: '',
     jwksUri: ''
 };
 
@@ -35,12 +35,11 @@ function getKey(header, callback) {
 
 // Function to verify JWT or API Key
 async function verifyTokenAndRespond(req) {
-    const env = process.env;
     const authHeader = req.headers.authorization;
     const apiKey = req.headers['ba_api_key'];
     const isAuthModeRequired = config.authMode === 'REQUIRED';
 
-    if (apiKey && apiKey === env.BA_API_KEY) {
+    if (apiKey && apiKey === config.apiKey) {
         return true; // Valid API Key
     }
 
