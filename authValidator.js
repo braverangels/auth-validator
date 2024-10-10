@@ -39,6 +39,7 @@ async function verifyTokenAndRespond(req) {
     const authHeader = req.headers.authorization;
     const apiKey = req.headers['ba_api_key'];
     const isAuthModeRequired = config.authMode === 'REQUIRED';
+    console.log('isAuthModeRequired: ' + isAuthModeRequired);
 
     if (apiKey && apiKey === config.apiKey) {
         return true; // Valid API Key
@@ -51,7 +52,6 @@ async function verifyTokenAndRespond(req) {
         }
 
         const token = authHeader.split(' ')[1]; // Extract the JWT token
-
 
         try {
             const decoded = await new Promise((resolve, reject) => {
