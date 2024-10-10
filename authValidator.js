@@ -37,7 +37,7 @@ async function verifyTokenAndRespond(req) {
     const env = process.env;
     const authHeader = req.headers.authorization;
     const apiKey = req.headers['ba_api_key'];
-    const isAuthModeRequired = config.AUTHMODE === 'REQUIRED';
+    const isAuthModeRequired = config.authMode === 'REQUIRED';
 
     if (apiKey && apiKey === env.BA_API_KEY) {
         return true; // Valid API Key
