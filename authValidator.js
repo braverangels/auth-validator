@@ -77,4 +77,4 @@ async function verifyTokenAndRespond(req) {
     return false;
 }
 
-module.exports = { verifyTokenAndRespond };
+module.exports = { configure, verifyTokenAndRespond };
