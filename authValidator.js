@@ -45,11 +45,15 @@ async function verifyTokenAndRespond(req) {
         return true; // Valid API Key
     }
 
-    // Check if AUTHMODE is REQUIRED or if Authorization header is present
-    if (isAuthModeRequired || (authHeader && authHeader.startsWith('Bearer '))) {
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return false; // Missing or invalid authorization
-        }
+    const hasBearerTokenHeader = authHeader && authHeader.startsWith('Bearer ');
+
+    //Auth is not required AND no bearer token is included in the request
+    if (!isAuthModeRequired && !hasBearerTokenHeader) {
+        return true;
+    }
+
+    //Auth is required OR the request has a bearer token
+    if (isAuthModeRequired || hasBearerTokenHeader) {
 
         const token = authHeader.split(' ')[1]; // Extract the JWT token
 
