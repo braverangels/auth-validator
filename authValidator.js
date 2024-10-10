@@ -35,6 +35,7 @@ function getKey(header, callback) {
 
 // Function to verify JWT or API Key
 async function verifyTokenAndRespond(req) {
+    console.log(JSON.stringify(config));
     const authHeader = req.headers.authorization;
     const apiKey = req.headers['ba_api_key'];
     const isAuthModeRequired = config.authMode === 'REQUIRED';
