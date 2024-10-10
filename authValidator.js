@@ -51,6 +51,7 @@ async function verifyTokenAndRespond(req) {
 
         const token = authHeader.split(' ')[1]; // Extract the JWT token
 
+
         try {
             const decoded = await new Promise((resolve, reject) => {
                 jwt.verify(token, getKey, {
