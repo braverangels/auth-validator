@@ -34,9 +34,14 @@ function configure(options) {
  * @param {string} [optToken] - Optional token to override the API key.
  * @returns {Object} Updated fetch options with the Authorization header.
  */
-function addBAAuthHeader(fetchOptions, optToken) {
-    let token = optToken ? optToken : config.apiKey;
-    fetchOptions.headers['Authorization'] = `Bearer ${token}`;
+function addBAAuthHeader(fetchOptions, optBearerToken) {
+
+    if (optBearerToken) {
+        fetchOptions.headers['Authorization'] = `Bearer ${token}`;
+    } else {
+        fetchOptions.headers['BA_API_KEY'] = `${config.apiKey}`;
+    }
+
     return fetchOptions;
 }
 
