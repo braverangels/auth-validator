@@ -78,7 +78,7 @@ function getKey(header, callback) {
 async function verifyTokenAndRespond(req) {
 
     const authHeader = req.headers.authorization;
-    const apiKey = req.headers['BA_API_KEY'];
+    const apiKey = req.headers['ba_api_key'];
     const authMode = config.authMode;
     const hasBearerTokenHeader = authHeader && authHeader.startsWith('Bearer ');
     console.log(JSON.stringify(config));
