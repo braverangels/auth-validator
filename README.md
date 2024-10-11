@@ -172,7 +172,7 @@ Here is a simple example of how to configure and use this module in an Express a
 
 ```js
 const express = require('express');
-const authValidator = require('./authValidator');
+const authValidator = require('auth-validator');
 
 const app = express();
 
