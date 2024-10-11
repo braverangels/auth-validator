@@ -81,6 +81,7 @@ async function verifyTokenAndRespond(req) {
     const apiKey = req.headers['BA_API_KEY'];
     const authMode = config.authMode;
     const hasBearerTokenHeader = authHeader && authHeader.startsWith('Bearer ');
+    console.log(req.headers);
 
     //No auth needed
     if (authMode === 'NONE') {
