@@ -59,7 +59,7 @@ async function verifyTokenAndRespond(req) {
     const hasBearerTokenHeader = authHeader && authHeader.startsWith('Bearer ');
 
     //Auth is OPTIONAL AND no bearer token is included in the request
-    if (authMode !== 'OPTIONAL' && !hasBearerTokenHeader) {
+    if (authMode === 'OPTIONAL' && !hasBearerTokenHeader) {
         return true;
     }
 
