@@ -81,28 +81,34 @@ async function verifyTokenAndRespond(req) {
     const apiKey = req.headers['ba_api_key'];
     const authMode = config.authMode;
 
+    //No auth needed
     if (authMode === 'NONE') {
         return true;
     }
 
+    //Valid api key is provided
     if (apiKey && apiKey === config.apiKey) {
         return true; // Valid API Key
     }
 
+    //Invalid API Key is provided with auth mode optional or required
     if ((authMode === "OPTIONAL" || authMode === "REQUIRED") && apiKey && apiKey !== config.apiKey) {
         return false;
     }
 
     const hasBearerTokenHeader = authHeader && authHeader.startsWith('Bearer ');
 
+    //No bearer token is included, authmode optional
     if (authMode === 'OPTIONAL' && !hasBearerTokenHeader) {
         return true;
     }
 
+    //No bearer token is included, authmode required
     if (authMode === 'REQUIRED' && !hasBearerTokenHeader) {
         return false;
     }
 
+    //Bearer token is included, authmode is either optional or required
     if ((authMode === "OPTIONAL" || authMode === "REQUIRED") && hasBearerTokenHeader) {
         const token = authHeader.split(' ')[1]; // Extract the JWT token
 
