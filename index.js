@@ -89,6 +89,10 @@ async function verifyTokenAndRespond(req) {
         return true; // Valid API Key
     }
 
+    if ((authMode === "OPTIONAL" || authMode === "REQUIRED") && apiKey && apiKey !== config.apiKey) {
+        return false;
+    }
+
     const hasBearerTokenHeader = authHeader && authHeader.startsWith('Bearer ');
 
     if (authMode === 'OPTIONAL' && !hasBearerTokenHeader) {
