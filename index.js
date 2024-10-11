@@ -78,7 +78,7 @@ function getKey(header, callback) {
 async function verifyTokenAndRespond(req) {
     console.log(JSON.stringify(config));
     const authHeader = req.headers.authorization;
-    const apiKey = req.headers['ba_api_key'];
+    const apiKey = req.headers['BA_API_KEY'];
     const authMode = config.authMode;
 
     //No auth needed
