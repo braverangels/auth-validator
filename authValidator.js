@@ -49,7 +49,7 @@ async function verifyTokenAndRespond(req) {
     const authMode = config.authMode;
     console.log('isAuthModeRequired: ' + isAuthModeRequired);
 
-    if (authMode == 'NONE') {
+    if (authMode === 'NONE') {
         return true;
     }
 
@@ -59,18 +59,18 @@ async function verifyTokenAndRespond(req) {
 
     const hasBearerTokenHeader = authHeader && authHeader.startsWith('Bearer ');
 
-    //Auth is not required AND no bearer token is included in the request
-    if (authMode !== 'TEST' && !hasBearerTokenHeader) {
+    //Auth is OPTIONAL AND no bearer token is included in the request
+    if (authMode !== 'OPTIONAL' && !hasBearerTokenHeader) {
         return true;
     }
 
     //Auth is REQUIRED AND no bearer token is included in the request
-    if (authMode == 'REQUIRED' && !hasBearerTokenHeader) {
+    if (authMode === 'REQUIRED' && !hasBearerTokenHeader) {
         return false;
     }
 
-    //Auth is REQUIRED or in TEST mode, and request has a bearer token
-    if ((authMode == "TEST" || authMode == "REQUIRED") && hasBearerTokenHeader) {
+    //Auth is REQUIRED or OPTIONAL, and request has a bearer token
+    if ((authMode === "OPTIONAL" || authMode === "REQUIRED") && hasBearerTokenHeader) {
 
         const token = authHeader.split(' ')[1]; // Extract the JWT token
 
