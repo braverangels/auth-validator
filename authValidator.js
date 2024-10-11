@@ -15,6 +15,14 @@ function configure(options) {
     config = { ...config, ...options };
 }
 
+// Function to add an auth token to the options variable for a fetch request
+// Default behavior is to add the BA API Key, but can also be used to add any bearer token
+function addAuthHeader(fetchOptions, optToken) {
+    let token = optToken ? optToken : config.apiKey;
+    fetchOptions.headers['Authorization'] = `Bearer ${optToken}`;
+    return fetchOptions;
+}
+
 // Function to retrieve signing key from Auth0
 function getKey(header, callback) {
     // Set up the JWKS client to fetch the public key from Auth0
