@@ -80,31 +80,31 @@ async function verifyTokenAndRespond(req) {
     const authHeader = req.headers.authorization;
     const apiKey = req.headers['BA_API_KEY'];
     const authMode = config.authMode;
+    const hasBearerTokenHeader = authHeader && authHeader.startsWith('Bearer ');
 
     //No auth needed
     if (authMode === 'NONE') {
         return true;
     }
 
-    //Valid api key is provided
+    //Auth mode optional, no bearer token or API KEY is provided.
+    if (authMode === 'OPTIONAL' && !hasBearerTokenHeader && !apiKey) {
+        return true;
+    }
+
+    //Any auth mode where a valid api key is provided
     if (apiKey && apiKey === config.apiKey) {
         return true; // Valid API Key
     }
 
-    //Invalid API Key is provided with auth mode optional or required
-    if ((authMode === "OPTIONAL" || authMode === "REQUIRED") && apiKey && apiKey !== config.apiKey) {
+    //When auth is required, reject any calls with both no bearer token and no api key
+    if (authMode === 'REQUIRED' && !hasBearerTokenHeader && !apiKey) {
         return false;
     }
 
-    const hasBearerTokenHeader = authHeader && authHeader.startsWith('Bearer ');
-
-    //No bearer token is included, authmode optional
-    if (authMode === 'OPTIONAL' && !hasBearerTokenHeader) {
-        return true;
-    }
-
-    //No bearer token is included, authmode required
-    if (authMode === 'REQUIRED' && !hasBearerTokenHeader) {
+    //When an invalid API Key is provided.  Reject unless auth mode is set to NONE.
+    if (authMode !== 'NONE' && apiKey && apiKey !== config.apiKey) {
+        console.error('Invalid API key value provided: ' + apiKey);
         return false;
     }
 
