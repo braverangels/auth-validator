@@ -2,14 +2,14 @@
   "name": "auth-validator",
   "version": "1.0.0",
   "description": "A module for verifying API key and/or JWT for Auth0",
-  "main": "authValidator.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "private": true,
   "repository": {
     "type": "git",
-    "url": "authValidator.js"
+    "url": "index.js"
   },
   "author": "Andrew Stillman",
   "license": "MIT",

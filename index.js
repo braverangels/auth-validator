@@ -1,5 +1,5 @@
 /**
- * @module authValidator
+ * @module auth-validator
  */
 
 const jwt = require('jsonwebtoken');
