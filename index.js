@@ -76,12 +76,13 @@ function getKey(header, callback) {
  * @returns {Promise<boolean>} A promise that resolves to `true` if the token or API key is valid, otherwise `false`.
  */
 async function verifyTokenAndRespond(req) {
-    console.log(JSON.stringify(config));
+
     const authHeader = req.headers.authorization;
     const apiKey = req.headers['BA_API_KEY'];
     const authMode = config.authMode;
     const hasBearerTokenHeader = authHeader && authHeader.startsWith('Bearer ');
-    console.log(req.headers);
+    console.log(JSON.stringify(config));
+    console.log(JSON.stringify(req.headers));
 
     //No auth needed
     if (authMode === 'NONE') {
