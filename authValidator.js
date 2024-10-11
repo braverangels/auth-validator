@@ -17,7 +17,7 @@ function configure(options) {
 
 // Function to add an auth token to the options variable for a fetch request
 // Default behavior is to add the BA API Key, but can also be used to add any bearer token
-function addAuthHeader(fetchOptions, optToken) {
+function addBAAuthHeader(fetchOptions, optToken) {
     let token = optToken ? optToken : config.apiKey;
     fetchOptions.headers['Authorization'] = `Bearer ${token}`;
     return fetchOptions;
@@ -98,4 +98,4 @@ async function verifyTokenAndRespond(req) {
     return false;
 }
 
-module.exports = { configure, addAuthHeader, verifyTokenAndRespond };
+module.exports = { configure, addBAAuthHeader, verifyTokenAndRespond };
