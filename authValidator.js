@@ -47,7 +47,6 @@ async function verifyTokenAndRespond(req) {
     const authHeader = req.headers.authorization;
     const apiKey = req.headers['ba_api_key'];
     const authMode = config.authMode;
-    console.log('isAuthModeRequired: ' + isAuthModeRequired);
 
     if (authMode === 'NONE') {
         return true;
@@ -81,7 +80,7 @@ async function verifyTokenAndRespond(req) {
                     issuer: config.issuer
                 }, (err, decoded) => {
                     if (err) {
-                        console.log("Error decoding key: " + JSON.stringify(err));
+                        console.error("Error decoding key: " + JSON.stringify(err));
                         reject(err);
                     } else {
                         resolve(decoded);
@@ -93,7 +92,7 @@ async function verifyTokenAndRespond(req) {
             return true;
 
         } catch (err) {
-            console.log(err);
+            console.error(err);
             return false; // Invalid token
         }
     }
