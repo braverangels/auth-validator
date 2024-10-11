@@ -1,4 +1,7 @@
-// authValidator.js
+/**
+ * @module authValidator
+ */
+
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 
@@ -10,22 +13,39 @@ let config = {
     jwksUri: ''
 };
 
-// Function to configure environment variables
+/**
+ * Configure the authentication settings.
+ * @param {Object} options - Configuration options.
+ * @param {string} [options.apiKey] - API key for the application.
+ * @param {string} [options.audience] - Expected audience for JWT verification.
+ * @param {string} [options.issuer] - Expected issuer for JWT verification.
+ * @param {string} [options.authMode] - Authentication mode ('NONE', 'OPTIONAL', or 'REQUIRED').
+ * @param {string} [options.jwksUri] - URI to retrieve JSON Web Key Set (JWKS).
+ */
 function configure(options) {
     config = { ...config, ...options };
 }
 
-// Function to add an auth token to the options variable for a fetch request
-// Default behavior is to add the BA API Key, but can also be used to add any bearer token
+/**
+ * Add a Bearer Authorization header to the fetch options.
+ * By default, it uses the API key, but an optional token can be provided.
+ * @param {Object} fetchOptions - Options object for fetch request.
+ * @param {Object} fetchOptions.headers - Headers object for the fetch request.
+ * @param {string} [optToken] - Optional token to override the API key.
+ * @returns {Object} Updated fetch options with the Authorization header.
+ */
 function addBAAuthHeader(fetchOptions, optToken) {
     let token = optToken ? optToken : config.apiKey;
     fetchOptions.headers['Authorization'] = `Bearer ${token}`;
     return fetchOptions;
 }
 
-// Function to retrieve signing key from Auth0
+/**
+ * Retrieve the signing key from Auth0 to verify the JWT signature.
+ * @param {Object} header - JWT header containing the 'kid' (key ID).
+ * @param {function} callback - Callback function that takes error and signing key.
+ */
 function getKey(header, callback) {
-    // Set up the JWKS client to fetch the public key from Auth0
     const client = jwksClient({
         jwksUri: config.jwksUri
     });
@@ -41,7 +61,15 @@ function getKey(header, callback) {
     });
 }
 
-// Function to verify JWT or API Key
+/**
+ * Verify the JWT or API key and determine if the request is authenticated.
+ * It checks the headers for a Bearer token or API key and validates based on the configured authMode.
+ * @param {Object} req - Express request object.
+ * @param {Object} req.headers - Headers from the request.
+ * @param {string} [req.headers.authorization] - Authorization header containing the Bearer token.
+ * @param {string} [req.headers['ba_api_key']] - Custom header for the BA API key.
+ * @returns {Promise<boolean>} A promise that resolves to `true` if the token or API key is valid, otherwise `false`.
+ */
 async function verifyTokenAndRespond(req) {
     console.log(JSON.stringify(config));
     const authHeader = req.headers.authorization;
@@ -58,19 +86,15 @@ async function verifyTokenAndRespond(req) {
 
     const hasBearerTokenHeader = authHeader && authHeader.startsWith('Bearer ');
 
-    //Auth is OPTIONAL AND no bearer token is included in the request
     if (authMode === 'OPTIONAL' && !hasBearerTokenHeader) {
         return true;
     }
 
-    //Auth is REQUIRED AND no bearer token is included in the request
     if (authMode === 'REQUIRED' && !hasBearerTokenHeader) {
         return false;
     }
 
-    //Auth is REQUIRED or OPTIONAL, and request has a bearer token
     if ((authMode === "OPTIONAL" || authMode === "REQUIRED") && hasBearerTokenHeader) {
-
         const token = authHeader.split(' ')[1]; // Extract the JWT token
 
         try {
@@ -88,17 +112,14 @@ async function verifyTokenAndRespond(req) {
                 });
             });
 
-            // Token is valid
-            return true;
-
+            return true; // Token is valid
         } catch (err) {
             console.error(err);
             return false; // Invalid token
         }
     }
 
-    // If AUTHMODE is not REQUIRED and no valid authorization is provided
-    return false;
+    return false; // No valid authorization provided
 }
 
 module.exports = { configure, addBAAuthHeader, verifyTokenAndRespond };
