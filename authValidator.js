@@ -6,7 +6,7 @@ let config = {
     apiKey: '',
     audience: '',
     issuer: '',
-    authMode: 'OPTIONAL',
+    authMode: 'NONE',
     jwksUri: ''
 };
 
@@ -46,8 +46,12 @@ async function verifyTokenAndRespond(req) {
     console.log(JSON.stringify(config));
     const authHeader = req.headers.authorization;
     const apiKey = req.headers['ba_api_key'];
-    const isAuthModeRequired = config.authMode === 'REQUIRED';
+    const authMode = config.authMode;
     console.log('isAuthModeRequired: ' + isAuthModeRequired);
+
+    if (authMode == 'NONE') {
+        return true;
+    }
 
     if (apiKey && apiKey === config.apiKey) {
         return true; // Valid API Key
@@ -56,17 +60,17 @@ async function verifyTokenAndRespond(req) {
     const hasBearerTokenHeader = authHeader && authHeader.startsWith('Bearer ');
 
     //Auth is not required AND no bearer token is included in the request
-    if (!isAuthModeRequired && !hasBearerTokenHeader) {
+    if (authMode !== 'TEST' && !hasBearerTokenHeader) {
         return true;
     }
 
-    //Auth is required AND no bearer token is included in the request
-    if (isAuthModeRequired && !hasBearerTokenHeader) {
+    //Auth is REQUIRED AND no bearer token is included in the request
+    if (authMode == 'REQUIRED' && !hasBearerTokenHeader) {
         return false;
     }
 
-    //The request has a bearer token
-    if (hasBearerTokenHeader) {
+    //Auth is REQUIRED or in TEST mode, and request has a bearer token
+    if ((authMode == "TEST" || authMode == "REQUIRED") && hasBearerTokenHeader) {
 
         const token = authHeader.split(' ')[1]; // Extract the JWT token
 
