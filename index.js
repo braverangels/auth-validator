@@ -36,6 +36,8 @@ function configure(options) {
  */
 function addBAAuthHeader(fetchOptions, optBearerToken) {
 
+    fetchOptions.headers = fetchOptions.headers ? fetchOptions.headers : {};
+
     if (optBearerToken) {
         fetchOptions.headers['Authorization'] = `Bearer ${token}`;
     } else {

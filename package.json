@@ -1,6 +1,6 @@
 {
   "name": "auth-validator",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A module for verifying API key and/or JWT for Auth0",
   "main": "index.js",
   "scripts": {
