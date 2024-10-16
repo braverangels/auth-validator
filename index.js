@@ -2,6 +2,9 @@
  * @module auth-validator
  */
 
+//Git version update instructions
+    //npm version patch
+
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 
@@ -10,7 +13,8 @@ let config = {
     audience: '',
     issuer: '',
     authMode: 'NONE',
-    jwksUri: ''
+    jwksUri: '',
+    debugMode: false
 };
 
 /**
@@ -24,6 +28,11 @@ let config = {
  */
 function configure(options) {
     config = { ...config, ...options };
+    for (let key in config) {
+        if (config[key] === undefined) {
+            console.error("Missing OAuth config parameter " + key);
+        }
+    }
 }
 
 /**
@@ -83,32 +92,48 @@ async function verifyTokenAndRespond(req) {
     const apiKey = req.headers['ba_api_key'];
     const authMode = config.authMode;
     const hasBearerTokenHeader = authHeader && authHeader.startsWith('Bearer ');
-    console.log(JSON.stringify(config));
-    console.log(JSON.stringify(req.headers));
+    if (config.debugMode) {
+        console.log(JSON.stringify(config));
+        console.log(JSON.stringify(req.headers));
+    }
 
     //No auth needed
     if (authMode === 'NONE') {
+        if (config.debugMode) {
+            console.log("authMode NONE");
+        }
         return true;
     }
 
     //Auth mode optional, no bearer token or API KEY is provided.
     if (authMode === 'OPTIONAL' && !hasBearerTokenHeader && !apiKey) {
+        if (config.debugMode) {
+            console.log("authMode OPTIONAL and no API key or auth header in request");
+        }
         return true;
     }
 
     //Any auth mode where a valid api key is provided
     if (apiKey && apiKey === config.apiKey) {
+        if (config.debugMode) {
+            console.log("Valid API key");
+        }
         return true; // Valid API Key
     }
 
     //When auth is required, reject any calls with both no bearer token and no api key
     if (authMode === 'REQUIRED' && !hasBearerTokenHeader && !apiKey) {
+        if (config.debugMode) {
+            console.log("authMode REQUIRED and no API key or auth header in request");
+        }
         return false;
     }
 
     //When an invalid API Key is provided.  Reject unless auth mode is set to NONE.
     if (authMode !== 'NONE' && apiKey && apiKey !== config.apiKey) {
-        console.error('Invalid API key value provided: ' + apiKey);
+        if (config.debugMode) {
+            console.error('Invalid API key value provided: ' + apiKey);
+        }
         return false;
     }
 
@@ -123,7 +148,9 @@ async function verifyTokenAndRespond(req) {
                     issuer: config.issuer
                 }, (err, decoded) => {
                     if (err) {
-                        console.error("Error decoding key: " + JSON.stringify(err));
+                        if (config.debugMode) {
+                            console.error("Error decoding key: " + JSON.stringify(err));
+                        }
                         reject(err);
                     } else {
                         resolve(decoded);
@@ -133,7 +160,9 @@ async function verifyTokenAndRespond(req) {
 
             return true; // Token is valid
         } catch (err) {
-            console.error(err);
+            if (config.debugMode) {
+                console.error(err);
+            }
             return false; // Invalid token
         }
     }
