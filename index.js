@@ -31,7 +31,7 @@ let config = {
 function configure(options) {
     config = { ...config, ...options };
     if (config.debugMode) {
-        console.log('Configuration updated:', config);
+        console.log('Configuration updated:', JSON.stringify(config));
     }
     for (let key in config) {
         if (config[key] === undefined) {
@@ -58,7 +58,7 @@ function addBAAuthHeader(fetchOptions, optBearerToken) {
     }
 
     if (config.debugMode) {
-        console.log('Updated fetch options with headers:', fetchOptions.headers);
+        console.log('Updated fetch options with headers:', JSON.stringify(fetchOptions.headers));
     }
 
     return fetchOptions;
@@ -109,42 +109,42 @@ async function verifyTokenAndRespond(req) {
     };
 
     if (config.debugMode) {
-        console.log('Request origin:', requestOrigin);
-        console.log('Request headers:', req.headers);
+        console.log('Request origin:', JSON.stringify(requestOrigin));
+        console.log('Request headers:', JSON.stringify(req.headers));
         console.log('Auth mode:', authMode);
     }
 
     if (authMode === 'NONE') {
         if (config.debugMode) {
-            console.log('Auth mode is NONE. Skipping authentication.', requestOrigin);
+            console.log('Auth mode is NONE. Skipping authentication.', JSON.stringify(requestOrigin));
         }
         return true;
     }
 
     if (authMode === 'OPTIONAL' && !hasBearerTokenHeader && !apiKey) {
         if (config.debugMode) {
-            console.log('Auth mode is OPTIONAL. No API key or Bearer token provided.', requestOrigin);
+            console.log('Auth mode is OPTIONAL. No API key or Bearer token provided.', JSON.stringify(requestOrigin));
         }
         return true;
     }
 
     if (apiKey && apiKey === config.apiKey) {
         if (config.debugMode) {
-            console.log('Valid API key provided.', requestOrigin);
+            console.log('Valid API key provided.', JSON.stringify(requestOrigin));
         }
         return true;
     }
 
     if (authMode === 'REQUIRED' && !hasBearerTokenHeader && !apiKey) {
         if (config.debugMode) {
-            console.error('Auth mode is REQUIRED. Missing API key or Bearer token.', requestOrigin);
+            console.error('Auth mode is REQUIRED. Missing API key or Bearer token.', JSON.stringify(requestOrigin));
         }
         return false;
     }
 
     if (authMode !== 'NONE' && apiKey && apiKey !== config.apiKey) {
         if (config.debugMode) {
-            console.error('Invalid API key provided:', apiKey, requestOrigin);
+            console.error('Invalid API key provided:', apiKey, JSON.stringify(requestOrigin));
         }
         return false;
     }
@@ -160,7 +160,7 @@ async function verifyTokenAndRespond(req) {
                 }, (err, decoded) => {
                     if (err) {
                         if (config.debugMode) {
-                            console.error('JWT verification error:', err, requestOrigin);
+                            console.error('JWT verification error:', err, JSON.stringify(requestOrigin));
                         }
                         reject(err);
                     } else {
@@ -170,20 +170,20 @@ async function verifyTokenAndRespond(req) {
             });
 
             if (config.debugMode) {
-                console.log('JWT successfully verified. Decoded token:', decoded, requestOrigin);
+                console.log('JWT successfully verified. Decoded token:', JSON.stringify(decoded), JSON.stringify(requestOrigin));
             }
 
             return true;
         } catch (err) {
             if (config.debugMode) {
-                console.error('Invalid JWT:', err, requestOrigin);
+                console.error('Invalid JWT:', JSON.stringify(err), JSON.stringify(requestOrigin));
             }
             return false;
         }
     }
 
     if (config.debugMode) {
-        console.error('No valid authorization provided.', requestOrigin);
+        console.error('No valid authorization provided.', JSON.stringify(requestOrigin));
     }
 
     return false;
