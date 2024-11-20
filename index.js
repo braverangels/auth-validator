@@ -2,8 +2,9 @@
  * @module auth-validator
  */
 
-//Git version update instructions
-    //npm version patch
+// Git version update instructions
+// After commit: npm version patch
+// Then do git push origin main --tags
 
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
@@ -14,7 +15,7 @@ let config = {
     issuer: '',
     authMode: 'NONE',
     jwksUri: '',
-    debugMode: false
+    debugMode: false // Enable or disable debug logging
 };
 
 /**
@@ -25,12 +26,16 @@ let config = {
  * @param {string} [options.issuer] - Expected issuer for JWT verification.
  * @param {string} [options.authMode] - Authentication mode ('NONE', 'OPTIONAL', or 'REQUIRED').
  * @param {string} [options.jwksUri] - URI to retrieve JSON Web Key Set (JWKS).
+ * @param {boolean} [options.debugMode] - Enable debug logging.
  */
 function configure(options) {
     config = { ...config, ...options };
+    if (config.debugMode) {
+        console.log('Configuration updated:', config);
+    }
     for (let key in config) {
         if (config[key] === undefined) {
-            console.error("Missing OAuth config parameter " + key);
+            console.error("Missing OAuth config parameter: " + key);
         }
     }
 }
@@ -44,13 +49,16 @@ function configure(options) {
  * @returns {Object} Updated fetch options with the Authorization header.
  */
 function addBAAuthHeader(fetchOptions, optBearerToken) {
-
-    fetchOptions.headers = fetchOptions.headers ? fetchOptions.headers : {};
+    fetchOptions.headers = fetchOptions.headers || {};
 
     if (optBearerToken) {
-        fetchOptions.headers['Authorization'] = `Bearer ${token}`;
+        fetchOptions.headers['Authorization'] = `Bearer ${optBearerToken}`;
     } else {
         fetchOptions.headers['BA_API_KEY'] = `${config.apiKey}`;
+    }
+
+    if (config.debugMode) {
+        console.log('Updated fetch options with headers:', fetchOptions.headers);
     }
 
     return fetchOptions;
@@ -68,10 +76,15 @@ function getKey(header, callback) {
 
     client.getSigningKey(header.kid, function (err, key) {
         if (err) {
-            console.log("Error getting signing key: " + JSON.stringify(err));
+            if (config.debugMode) {
+                console.error('Error retrieving signing key:', err);
+            }
             callback(err);
         } else {
             const signingKey = key.getPublicKey();
+            if (config.debugMode) {
+                console.log('Retrieved signing key:', signingKey);
+            }
             callback(null, signingKey);
         }
     });
@@ -82,64 +95,62 @@ function getKey(header, callback) {
  * It checks the headers for a Bearer token or API key and validates based on the configured authMode.
  * @param {Object} req - Express request object.
  * @param {Object} req.headers - Headers from the request.
- * @param {string} [req.headers.authorization] - Authorization header containing the Bearer token.
- * @param {string} [req.headers['ba_api_key']] - Custom header for the BA API key.
  * @returns {Promise<boolean>} A promise that resolves to `true` if the token or API key is valid, otherwise `false`.
  */
 async function verifyTokenAndRespond(req) {
-
     const authHeader = req.headers.authorization;
     const apiKey = req.headers['ba_api_key'];
     const authMode = config.authMode;
     const hasBearerTokenHeader = authHeader && authHeader.startsWith('Bearer ');
+
+    const requestOrigin = {
+        ip: req.ip || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent'] || 'Unknown'
+    };
+
     if (config.debugMode) {
-        console.log(JSON.stringify(config));
-        console.log(JSON.stringify(req.headers));
+        console.log('Request origin:', requestOrigin);
+        console.log('Request headers:', req.headers);
+        console.log('Auth mode:', authMode);
     }
 
-    //No auth needed
     if (authMode === 'NONE') {
         if (config.debugMode) {
-            console.log("authMode NONE");
+            console.log('Auth mode is NONE. Skipping authentication.', requestOrigin);
         }
         return true;
     }
 
-    //Auth mode optional, no bearer token or API KEY is provided.
     if (authMode === 'OPTIONAL' && !hasBearerTokenHeader && !apiKey) {
         if (config.debugMode) {
-            console.log("authMode OPTIONAL and no API key or auth header in request");
+            console.log('Auth mode is OPTIONAL. No API key or Bearer token provided.', requestOrigin);
         }
         return true;
     }
 
-    //Any auth mode where a valid api key is provided
     if (apiKey && apiKey === config.apiKey) {
         if (config.debugMode) {
-            console.log("Valid API key");
+            console.log('Valid API key provided.', requestOrigin);
         }
-        return true; // Valid API Key
+        return true;
     }
 
-    //When auth is required, reject any calls with both no bearer token and no api key
     if (authMode === 'REQUIRED' && !hasBearerTokenHeader && !apiKey) {
         if (config.debugMode) {
-            console.log("authMode REQUIRED and no API key or auth header in request");
+            console.error('Auth mode is REQUIRED. Missing API key or Bearer token.', requestOrigin);
         }
         return false;
     }
 
-    //When an invalid API Key is provided.  Reject unless auth mode is set to NONE.
     if (authMode !== 'NONE' && apiKey && apiKey !== config.apiKey) {
         if (config.debugMode) {
-            console.error('Invalid API key value provided: ' + apiKey);
+            console.error('Invalid API key provided:', apiKey, requestOrigin);
         }
         return false;
     }
 
-    //Bearer token is included, authmode is either optional or required
-    if ((authMode === "OPTIONAL" || authMode === "REQUIRED") && hasBearerTokenHeader) {
-        const token = authHeader.split(' ')[1]; // Extract the JWT token
+    if ((authMode === 'OPTIONAL' || authMode === 'REQUIRED') && hasBearerTokenHeader) {
+        const token = authHeader.split(' ')[1];
 
         try {
             const decoded = await new Promise((resolve, reject) => {
@@ -149,7 +160,7 @@ async function verifyTokenAndRespond(req) {
                 }, (err, decoded) => {
                     if (err) {
                         if (config.debugMode) {
-                            console.error("Error decoding key: " + JSON.stringify(err));
+                            console.error('JWT verification error:', err, requestOrigin);
                         }
                         reject(err);
                     } else {
@@ -158,16 +169,25 @@ async function verifyTokenAndRespond(req) {
                 });
             });
 
-            return true; // Token is valid
+            if (config.debugMode) {
+                console.log('JWT successfully verified. Decoded token:', decoded, requestOrigin);
+            }
+
+            return true;
         } catch (err) {
             if (config.debugMode) {
-                console.error(err);
+                console.error('Invalid JWT:', err, requestOrigin);
             }
-            return false; // Invalid token
+            return false;
         }
     }
 
-    return false; // No valid authorization provided
+    if (config.debugMode) {
+        console.error('No valid authorization provided.', requestOrigin);
+    }
+
+    return false;
 }
+
 
 module.exports = { configure, addBAAuthHeader, verifyTokenAndRespond };
